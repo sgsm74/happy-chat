@@ -1,0 +1,8 @@
+abstract class VerificationEvent {
+  VerificationEvent();
+}
+
+class Verification extends VerificationEvent {
+  String code;
+  Verification(this.code);
+}
