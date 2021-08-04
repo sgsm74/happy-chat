@@ -80,6 +80,8 @@ class _HomeViewState extends State<HomeView> {
                                         .toString(),
                                     token: state.data["data"][index]["token"]
                                         .toString(),
+                                    userId: state.data["data"][index]["id"]
+                                        .toString(),
                                   )),
                         );
                       },

@@ -13,12 +13,4 @@ class Constants {
   static Color kHintColor = Color(0xff413d4b).withOpacity(0.5);
   static Color kReceiverMessageBackgroundColor = Color(0xffF6BEB1);
   static Color kSenderMessageBackgroundColor = Color(0xffFBDEAC);
-
-  static String publishToTopic(String otpToken, String userToken) {
-    return 'challenge/user/' + otpToken + '/' + userToken + '/';
-  }
-
-  static String subscribeToTopic(String otpToken, String userToken) {
-    return 'challenge/user/' + userToken + '/' + otpToken + '/';
-  }
 }

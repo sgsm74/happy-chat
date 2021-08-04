@@ -34,7 +34,9 @@ dependencies:
   hive: ^2.0.4
   hive_flutter: ^1.1.0
   mqtt_client: ^9.4.2
+  hive_generator: ^1.1.0
 dev_dependencies:
+  build_runner: ^2.1.0
   flutter_test:
     sdk: flutter
 

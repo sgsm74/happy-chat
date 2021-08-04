@@ -19,10 +19,7 @@ class SignupBloc extends Bloc<SignUpEvent, SignUpState> {
         yield LoadingSignUpState();
         var response = await authApi.signUp(event.number);
         await Session.write('phone', event.number.toString());
-        Map<String, dynamic> map = json.decode(response.body);
-        print(map);
         if (response.statusCode == 200) {
-          print(response.body);
           yield SuccessSignUpState();
         } else {
           yield FailedSignUpState();

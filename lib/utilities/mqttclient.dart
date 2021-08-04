@@ -1,4 +1,4 @@
-import 'package:happy_chat/utilities/constants.dart';
+import 'package:happy_chat/utilities/mqqt-detail.dart';
 import 'package:happy_chat/utilities/session.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
@@ -15,10 +15,9 @@ class MQTTClientWrapper {
   prepareMqttClient() async {
     _setupMqttClient();
     otpToken = await Session.read('token');
-
     await _connectClient();
 
-    _subscribeToTopic(Constants.subscribeToTopic(otpToken, userToken));
+    _subscribeToTopic(MQQTDetail.subscribeToTopic(otpToken, userToken));
   }
 
   void publishMessage(String message) {
@@ -48,14 +47,14 @@ class MQTTClientWrapper {
   }
 
   void _setupMqttClient() {
-    client = MqttServerClient.withPort("185.86.181.206", '#', 31789);
+    client = MqttServerClient.withPort(MQQTDetail.ip, '#', MQQTDetail.port);
     client.logging(on: false);
     client.keepAlivePeriod = 20;
     client.onDisconnected = _onDisconnected;
     client.onConnected = _onConnected;
     client.onSubscribed = _onSubscribed;
     client.connectionMessage = MqttConnectMessage()
-      ..authenticateAs("challenge", "8dAtPHvjPNC4erjFRfy");
+      ..authenticateAs(MQQTDetail.username, MQQTDetail.password);
   }
 
   _subscribeToTopic(String topicName) {
@@ -77,8 +76,8 @@ class MQTTClientWrapper {
     builder.addString(message);
 
     print(
-        'MQTTClientWrapper::Publishing message $message to topic ${Constants.publishToTopic(otpToken, userToken)}');
-    client.publishMessage(Constants.publishToTopic(otpToken, userToken),
+        'MQTTClientWrapper::Publishing message $message to topic ${MQQTDetail.publishToTopic(otpToken, userToken)}');
+    client.publishMessage(MQQTDetail.publishToTopic(otpToken, userToken),
         MqttQos.exactlyOnce, builder.payload!);
   }
 

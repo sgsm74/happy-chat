@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:happy_chat/data/bloc/chat/chat_bloc.dart';
+import 'package:happy_chat/data/bloc/chat/chat_event.dart';
+import 'package:happy_chat/data/bloc/chat/chat_state.dart';
+import 'package:happy_chat/data/bloc/messages/messages_bloc.dart';
+import 'package:happy_chat/data/bloc/messages/messages_event.dart';
+import 'package:happy_chat/data/bloc/messages/messages_state.dart';
 import 'package:happy_chat/data/models/message.dart';
 import 'package:happy_chat/utilities/constants.dart';
 import 'dart:math' as math;
 
 import 'package:happy_chat/utilities/mqttclient.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class ChatView extends StatefulWidget {
   final String name;
   final String token;
+  final String userId;
 
-  const ChatView({Key? key, required this.name, required this.token})
+  const ChatView(
+      {Key? key, required this.name, required this.token, required this.userId})
       : super(key: key);
 
   @override
@@ -17,16 +27,29 @@ class ChatView extends StatefulWidget {
 }
 
 class _ChatViewState extends State<ChatView> {
-  List<Message> messages = [];
+  //List<Message> messages = [];
   int id = 1;
   TextEditingController controller = TextEditingController();
   late MQTTClientWrapper mqttClientWrapper;
+  //late var box;
 
   @override
   void initState() {
     super.initState();
+    //openBox();
+    BlocProvider.of<MessagesBloc>(context).add(PrepareMessages(widget.userId));
     mqttClientWrapper = MQTTClientWrapper(widget.token);
     mqttClientWrapper.prepareMqttClient();
+  }
+
+  openBox() async {
+    await Hive.openBox<Message>('chats-' + widget.userId);
+    print("opened");
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   _buildMessageComposer() {
@@ -62,15 +85,18 @@ class _ChatViewState extends State<ChatView> {
               onPressed: () {
                 if (controller.text.isNotEmpty) {
                   setState(() {
-                    mqttClientWrapper.publishMessage(controller.text);
-                    messages.add(
-                      Message(
-                        id: id++,
-                        content: controller.text,
-                        isMe: true,
-                        date: DateTime.now(),
-                      ),
+                    BlocProvider.of<ChatBloc>(context).add(
+                      SendMessage(
+                          Message(
+                            content: controller.text,
+                            date: DateTime.now(),
+                            id: id++,
+                            isMe: true,
+                          ),
+                          widget.userId,
+                          widget.token),
                     );
+                    mqttClientWrapper.publishMessage(controller.text);
 
                     controller.text = '';
                   });
@@ -151,36 +177,11 @@ class _ChatViewState extends State<ChatView> {
       body: GestureDetector(
         child: Column(
           children: [
-            Expanded(
-              child: messages.isNotEmpty
-                  ? ListView.builder(
-                      itemCount: messages.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Container(
-                          width: MediaQuery.of(context).size.width * 0.70,
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                          margin: messages[index].isMe
-                              ? EdgeInsets.only(
-                                  left: 70, top: 10, bottom: 10, right: 10)
-                              : EdgeInsets.only(
-                                  right: 70, top: 10, bottom: 10, left: 10),
-                          decoration: BoxDecoration(
-                            color: messages[index].isMe
-                                ? Constants.kSenderMessageBackgroundColor
-                                : Constants.kReceiverMessageBackgroundColor,
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(10),
-                            ),
-                          ),
-                          child: Text(
-                            messages[index].content,
-                            textDirection: TextDirection.rtl,
-                          ),
-                        );
-                      },
-                    )
-                  : Container(
+            BlocBuilder<MessagesBloc, PrepareMessagesState>(
+              builder: (context, state) {
+                if (state is InitialPrepareMessages) {
+                  return Expanded(
+                    child: Container(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -210,7 +211,145 @@ class _ChatViewState extends State<ChatView> {
                         ],
                       ),
                     ),
+                  );
+                } else if (state is SuccessPrepareMessages) {
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: state.data.length,
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemBuilder: (BuildContext context, int index) {
+                        Message currenMessage = state.data[index];
+                        return Container(
+                          width: MediaQuery.of(context).size.width * 0.70,
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          margin: currenMessage.isMe
+                              ? EdgeInsets.only(
+                                  left: 70, top: 10, bottom: 10, right: 10)
+                              : EdgeInsets.only(
+                                  right: 70, top: 10, bottom: 10, left: 10),
+                          decoration: BoxDecoration(
+                            color: currenMessage.isMe
+                                ? Constants.kSenderMessageBackgroundColor
+                                : Constants.kReceiverMessageBackgroundColor,
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(10),
+                            ),
+                          ),
+                          child: Text(
+                            currenMessage.content,
+                            textDirection: TextDirection.rtl,
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                } else
+                  return Container(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 164,
+                          height: 171,
+                          child: Image.asset("assets/portal.png"),
+                        ),
+                        Text(
+                          "هنوز به این دنیا وارد نشدی.",
+                          textDirection: TextDirection.rtl,
+                          style: TextStyle(
+                            color: Constants.kTextColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          "یه پرتال بزن به گوشی رفیقت.",
+                          textDirection: TextDirection.rtl,
+                          style: TextStyle(
+                            color: Constants.kTextColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+              },
             ),
+            /* ValueListenableBuilder(
+              valueListenable:
+                  Hive.box<Message>('chats-' + widget.userId).listenable(),
+              builder: (context, Box<Message> box, _) {
+                if (box.values.isEmpty) {
+                  return Expanded(
+                    child: Container(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 164,
+                            height: 171,
+                            child: Image.asset("assets/portal.png"),
+                          ),
+                          Text(
+                            "هنوز به این دنیا وارد نشدی.",
+                            textDirection: TextDirection.rtl,
+                            style: TextStyle(
+                              color: Constants.kTextColor,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            "یه پرتال بزن به گوشی رفیقت.",
+                            textDirection: TextDirection.rtl,
+                            style: TextStyle(
+                              color: Constants.kTextColor,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                return Expanded(
+                  child: ListView.builder(
+                    itemCount: box.values.length,
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemBuilder: (BuildContext context, int index) {
+                      Message? currentMessage = box.getAt(index);
+                      return Container(
+                        width: MediaQuery.of(context).size.width * 0.70,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                        margin: currentMessage!.isMe
+                            ? EdgeInsets.only(
+                                left: 70, top: 10, bottom: 10, right: 10)
+                            : EdgeInsets.only(
+                                right: 70, top: 10, bottom: 10, left: 10),
+                        decoration: BoxDecoration(
+                          color: currentMessage.isMe
+                              ? Constants.kSenderMessageBackgroundColor
+                              : Constants.kReceiverMessageBackgroundColor,
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          currentMessage.content,
+                          textDirection: TextDirection.rtl,
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ), */
             _buildMessageComposer(),
           ],
         ),

@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:happy_chat/data/bloc/authentication/authentication_bloc.dart';
 import 'package:happy_chat/data/bloc/authentication/authentication_event.dart';
 import 'package:happy_chat/data/bloc/authentication/authentication_state.dart';
+import 'package:happy_chat/data/bloc/chat/chat_bloc.dart';
+import 'package:happy_chat/data/bloc/messages/messages_bloc.dart';
 import 'package:happy_chat/data/bloc/signup/signup_bloc.dart';
 import 'package:happy_chat/data/bloc/verification/verification_bloc.dart';
+import 'package:happy_chat/data/models/message.dart';
 import 'package:happy_chat/presentation/router/app-router.dart';
 import 'package:happy_chat/presentation/screens/home/home.dart';
 import 'package:happy_chat/presentation/screens/signup/signup.dart';
@@ -12,6 +15,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
   await Hive.initFlutter();
+  Hive.registerAdapter<Message>(MessageAdapter());
   runApp(MyApp());
 }
 
@@ -31,6 +35,12 @@ class MyApp extends StatelessWidget {
           create: (BuildContext context) =>
               AuthenticationBloc()..add(Authentication()),
         ),
+        BlocProvider<ChatBloc>(
+          create: (BuildContext context) => ChatBloc(),
+        ),
+        BlocProvider<MessagesBloc>(
+          create: (BuildContext context) => MessagesBloc(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -39,7 +49,6 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: Color(0xffFCEDEA),
           //textTheme: TextTheme(bodyText2: TextStyle()),
           fontFamily: 'Dana',
-          primarySwatch: Colors.blue,
         ),
         home: BlocBuilder<AuthenticationBloc, AuthenticationState>(
           builder: (context, state) {

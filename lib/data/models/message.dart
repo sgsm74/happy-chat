@@ -1,9 +1,20 @@
 import 'dart:convert';
 
-class Message {
+import 'package:hive/hive.dart';
+part 'message.g.dart';
+
+@HiveType(typeId: 1)
+class Message extends HiveObject {
+  @HiveField(0)
   int id;
+
+  @HiveField(1)
   String content;
+
+  @HiveField(2)
   bool isMe;
+
+  @HiveField(3)
   DateTime date;
   Message({
     required this.id,
@@ -12,6 +23,34 @@ class Message {
     required this.date,
   });
 
+  factory Message.fromJson(Map<String, dynamic> jsonData) {
+    return Message(
+      id: jsonData['id'],
+      content: jsonData['content'],
+      isMe: jsonData['isMe'],
+      date: jsonData['date'],
+    );
+  }
+
+  static Map<String, dynamic> toMap(Message message) => {
+        'id': message.id,
+        'content': message.content,
+        'isMe': message.isMe,
+        'date': message.date,
+      };
+
+  static String encode(List<Message> messages) => json.encode(
+        messages
+            .map<Map<String, dynamic>>((message) => Message.toMap(message))
+            .toList(),
+      );
+
+  static List<Message> decode(String messages) =>
+      (json.decode(messages) as List<dynamic>)
+          .map<Message>((item) => Message.fromJson(item))
+          .toList();
+
+/* 
   Message copyWith({
     int? id,
     String? content,
@@ -33,7 +72,7 @@ class Message {
       'isMe': isMe,
       'date': date.millisecondsSinceEpoch,
     };
-  }
+  } 
 
   factory Message.fromMap(Map<String, dynamic> map) {
     return Message(
@@ -68,5 +107,5 @@ class Message {
   @override
   int get hashCode {
     return id.hashCode ^ content.hashCode ^ isMe.hashCode ^ date.hashCode;
-  }
+  } */
 }

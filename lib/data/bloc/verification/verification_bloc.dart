@@ -21,7 +21,6 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
         var response = await authApi.verification(event.code);
         Map<String, dynamic> map = json.decode(response.body);
         if (response.statusCode == 200) {
-          print(map["data"]["token"].toString());
           Session.write('token', map["data"]["token"].toString());
           yield SuccessVerificationState();
         } else {
