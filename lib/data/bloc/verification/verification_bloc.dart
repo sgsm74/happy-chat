@@ -34,9 +34,9 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
         yield InitialResendCode();
         String number = await Session.read('phone');
         signupBloc.add(SignUp(int.parse(number)));
-        yield SuccessResendCode(20);
-        await Future.delayed(Duration(seconds: 20));
-        yield InitialResendCode();
+        yield SuccessResendCode();
+        //await Future.delayed(Duration(seconds: 20));
+        //yield InitialResendCode();
       }
     } catch (e) {
       print(e);

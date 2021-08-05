@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:happy_chat/data/bloc/verification/verification_bloc.dart';
+import 'package:happy_chat/data/bloc/verification/verification_event.dart';
 import 'package:happy_chat/data/bloc/verification/verification_state.dart';
 import 'package:happy_chat/presentation/screens/verification/widgets/input-box.dart';
 import 'package:happy_chat/utilities/constants.dart';
@@ -17,6 +20,28 @@ class _VerificationViewState extends State<VerificationView> {
   TextEditingController controller2 = TextEditingController();
   TextEditingController controller3 = TextEditingController();
   TextEditingController controller4 = TextEditingController();
+
+  late Timer _timer;
+  int _start = 20;
+
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(
+      oneSec,
+      (Timer timer) {
+        if (_start == 0) {
+          setState(() {
+            timer.cancel();
+          });
+        } else {
+          setState(() {
+            _start--;
+          });
+        }
+      },
+    );
+  }
+
   @override
   void dispose() {
     // Clean up the controller when the widget is disposed.
@@ -24,6 +49,7 @@ class _VerificationViewState extends State<VerificationView> {
     controller2.dispose();
     controller3.dispose();
     controller4.dispose();
+    _timer.cancel();
     super.dispose();
   }
 
@@ -141,23 +167,49 @@ class _VerificationViewState extends State<VerificationView> {
                           SizedBox(
                             height: 15,
                           ),
-                          Text(
-                            "ارسال مجدد کد",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
+                          GestureDetector(
+                            onTap: () {
+                              BlocProvider.of<VerificationBloc>(context)
+                                  .add(ResendCode());
+                              _start = 20;
+                              startTimer();
+                            },
+                            child: Text(
+                              "ارسال مجدد کد",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
                           ),
                         ],
                       );
-                    } else
-                      return Text(
+                    } else if (state is SuccessResendCode) {
+                      if (_start != 0) {
+                        return Text(
+                          "ارسال مجدد تا $_start ثانیه دیگر",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        );
+                      }
+                    }
+                    return GestureDetector(
+                      onTap: () {
+                        BlocProvider.of<VerificationBloc>(context)
+                            .add(ResendCode());
+                        _start = 20;
+                        startTimer();
+                      },
+                      child: Text(
                         "ارسال مجدد کد",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           decoration: TextDecoration.underline,
                         ),
-                      );
+                      ),
+                    );
                   },
                 )
               ],

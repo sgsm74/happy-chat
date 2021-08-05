@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
         home: BlocBuilder<AuthenticationBloc, AuthenticationState>(
           builder: (context, state) {
             if (state is SuccessAuthenticationState)
-              return VerificationView();
+              return HomeView();
             else
               return SignUpView();
           },

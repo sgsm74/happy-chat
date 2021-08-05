@@ -24,6 +24,5 @@ class InitialResendCode extends VerificationState {
 }
 
 class SuccessResendCode extends VerificationState {
-  int count;
-  SuccessResendCode(this.count);
+  SuccessResendCode();
 }
