@@ -1,22 +1,26 @@
+import 'dart:convert';
+
+import 'package:happy_chat/data/models/message.dart';
 import 'package:happy_chat/utilities/mqqt-detail.dart';
 import 'package:happy_chat/utilities/session.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 
 class MQTTClientWrapper {
   late MqttServerClient client;
-  String userToken;
+  String userToken, userId;
   late String otpToken;
+  int id = 0;
   MqttCurrentConnectionState connectionState = MqttCurrentConnectionState.IDLE;
   MqttSubscriptionState subscriptionState = MqttSubscriptionState.IDLE;
 
-  MQTTClientWrapper(this.userToken);
+  MQTTClientWrapper(this.userToken, this.userId);
 
   prepareMqttClient() async {
     _setupMqttClient();
     otpToken = await Session.read('token');
     await _connectClient();
-
     _subscribeToTopic(MQQTDetail.subscribeToTopic(otpToken, userToken));
   }
 
@@ -57,28 +61,46 @@ class MQTTClientWrapper {
       ..authenticateAs(MQQTDetail.username, MQQTDetail.password);
   }
 
-  _subscribeToTopic(String topicName) {
+  void _subscribeToTopic(String topicName) {
     print('MQTTClientWrapper::Subscribing to the $topicName topic');
     client.subscribe(topicName, MqttQos.atMostOnce);
 
     client.updates!.listen((List<MqttReceivedMessage<MqttMessage>> c) {
       final recMess = c[0].payload as MqttPublishMessage;
 
-      final pt =
+      String message =
           MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+      String decodeMessage = Utf8Decoder().convert(message.codeUnits);
 
-      print("MQTTClientWrapper::GOT A NEW MESSAGE $pt");
+      print("MQTTClientWrapper::GOT A NEW MESSAGE $decodeMessage");
+      saveResponse(decodeMessage);
     });
+  }
+
+  saveResponse(String content) async {
+    Box<Message> contactsBox = Hive.box<Message>('chats-' + userId);
+    contactsBox.add(
+      Message(
+        content: content,
+        date: DateTime.now(),
+        id: id++,
+        isMe: false,
+      ),
+    );
   }
 
   void _publishMessage(String message) {
     final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
-    builder.addString(message);
+    builder.addUTF8String(message);
 
     print(
         'MQTTClientWrapper::Publishing message $message to topic ${MQQTDetail.publishToTopic(otpToken, userToken)}');
-    client.publishMessage(MQQTDetail.publishToTopic(otpToken, userToken),
-        MqttQos.exactlyOnce, builder.payload!);
+
+    client.publishMessage(
+      MQQTDetail.publishToTopic(otpToken, userToken),
+      MqttQos.atLeastOnce,
+      builder.payload!,
+    );
   }
 
   void _onSubscribed(String topic) {

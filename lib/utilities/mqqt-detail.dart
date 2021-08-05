@@ -5,7 +5,7 @@ class MQQTDetail {
   static String password = '8dAtPHvjPNC4erjFRfy';
 
   static String publishToTopic(String otpToken, String userToken) {
-    return 'challenge/user/' + otpToken + '/' + userToken + '/';
+    return 'challenge/user/' + userToken + '/' + otpToken + '/';
   }
 
   static String subscribeToTopic(String otpToken, String userToken) {

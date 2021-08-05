@@ -17,3 +17,13 @@ class SuccessVerificationState extends VerificationState {
 class FailedVerificationState extends VerificationState {
   FailedVerificationState();
 }
+
+//**************************** */
+class InitialResendCode extends VerificationState {
+  InitialResendCode();
+}
+
+class SuccessResendCode extends VerificationState {
+  int count;
+  SuccessResendCode(this.count);
+}

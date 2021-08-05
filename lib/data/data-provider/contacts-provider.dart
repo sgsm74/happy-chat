@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:happy_chat/data/api.dart';
 import 'package:happy_chat/utilities/session.dart';
 import 'package:http/http.dart';
@@ -16,7 +14,6 @@ class ContactsApi {
           'Authorization': 'Token ' + token,
         },
       );
-      //Map<String, dynamic> map = json.decode(response.body);
       return response;
     } on Exception catch (e) {
       return http.Response(e.toString(), 400);

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:happy_chat/data/bloc/signup/signup_event.dart';

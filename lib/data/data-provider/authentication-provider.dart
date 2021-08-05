@@ -16,7 +16,6 @@ class AuthenticationApi {
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
-
       return response;
     } on Exception catch (e) {
       return http.Response(e.toString(), 400);

@@ -25,7 +25,6 @@ class _SignUpViewState extends State<SignUpView> {
         child: ListView(
           children: [
             Column(
-              //mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
                   margin: EdgeInsets.only(top: 50),
@@ -47,9 +46,10 @@ class _SignUpViewState extends State<SignUpView> {
                     textDirection: TextDirection.rtl,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Constants.kTextColor),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Constants.kTextColor,
+                    ),
                   ),
                 ),
                 Container(
@@ -61,7 +61,10 @@ class _SignUpViewState extends State<SignUpView> {
                     child: TextFormField(
                       validator: (value) {
                         if (value == null || value.length < 11)
-                          return "به نظر می آید شماره تلفن معتبری وارد نکرده اید، مجددا تلاش کنید";
+                          Text(
+                            "به نظر می آید شماره تلفن معتبری وارد نکرده اید، مجددا تلاش کنید",
+                            textAlign: TextAlign.right,
+                          );
                       },
                       controller: numberController,
                       textAlign: TextAlign.left,
@@ -79,7 +82,6 @@ class _SignUpViewState extends State<SignUpView> {
                       decoration: InputDecoration(
                         counterText: "",
                         fillColor: Colors.white,
-                        //focusColor: Colors.white,
                         filled: true,
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Constants.kBorderColor),
@@ -96,8 +98,9 @@ class _SignUpViewState extends State<SignUpView> {
                         hintStyle: TextStyle(
                           color: Constants.kBorderColor,
                         ),
+                        hintTextDirection: TextDirection.rtl,
                         prefixIcon: Container(
-                          width: 60,
+                          width: 50,
                           decoration: BoxDecoration(
                             border: Border(
                               right: BorderSide(color: Constants.kBorderColor),
@@ -134,9 +137,14 @@ class _SignUpViewState extends State<SignUpView> {
                 GestureDetector(
                   onTap: () {
                     if (_formKey.currentState!.validate()) {
-                      BlocProvider.of<SignupBloc>(context).add(SignUp(int.parse(
-                          numberController.text
-                              .replaceAll(new RegExp(r"\s+"), ""))));
+                      BlocProvider.of<SignupBloc>(context).add(
+                        SignUp(
+                          int.parse(
+                            numberController.text
+                                .replaceAll(new RegExp(r"\s+"), ""),
+                          ),
+                        ),
+                      );
                     }
                   },
                   child: Container(
@@ -150,28 +158,30 @@ class _SignUpViewState extends State<SignUpView> {
                     ),
                     margin: EdgeInsets.only(left: 20, right: 20, top: 200),
                     child: Center(
-                        child: BlocConsumer<SignupBloc, SignUpState>(
-                      listener: (context, state) {
-                        if (state is SuccessSignUpState) {
-                          Navigator.of(context).pushNamed('/verification');
-                        }
-                      },
-                      builder: (context, state) {
-                        if (state is LoadingSignUpState)
-                          return CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 1,
-                          );
-                        else
-                          return Text(
-                            "ثبت نام",
-                            style: TextStyle(
+                      child: BlocConsumer<SignupBloc, SignUpState>(
+                        listener: (context, state) {
+                          if (state is SuccessSignUpState) {
+                            Navigator.of(context).pushNamed('/verification');
+                          }
+                        },
+                        builder: (context, state) {
+                          if (state is LoadingSignUpState)
+                            return CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 1,
+                            );
+                          else
+                            return Text(
+                              "ثبت نام",
+                              style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
-                                fontWeight: FontWeight.w600),
-                          );
-                      },
-                    )),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            );
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -198,16 +208,13 @@ class CustomInputFormatter extends TextInputFormatter {
       buffer.write(text[i]);
       var nonZeroIndex = i + 1;
       if (nonZeroIndex == 4 && nonZeroIndex != text.length) {
-        buffer.write(
-            ' '); // Replace this with anything you want to put after each 4 numbers
+        buffer.write(' ');
       }
       if (nonZeroIndex == 7 && nonZeroIndex != text.length) {
-        buffer.write(
-            ' '); // Replace this with anything you want to put after each 4 numbers
+        buffer.write(' ');
       }
       if (nonZeroIndex == 11 && nonZeroIndex != text.length) {
-        buffer.write(
-            ' '); // Replace this with anything you want to put after each 4 numbers
+        buffer.write(' ');
       }
     }
 

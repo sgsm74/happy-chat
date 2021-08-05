@@ -40,27 +40,31 @@ class _InputBoxState extends State<InputBox> {
         controller: widget.controller,
         maxLength: 1,
         onChanged: (value) {
-          setState(() {
-            if (value.isNotEmpty) {
-              globals.code = globals.code + value.toString();
-              if (!widget.lastChild) {
-                FocusScope.of(context).nextFocus();
-              } else {
-                BlocProvider.of<VerificationBloc>(context)
-                    .add(Verification(globals.code));
+          setState(
+            () {
+              if (value.isNotEmpty) {
+                globals.code = globals.code + value.toString();
+                if (!widget.lastChild) {
+                  FocusScope.of(context).nextFocus();
+                } else {
+                  BlocProvider.of<VerificationBloc>(context)
+                      .add(Verification(globals.code));
+                }
+              } else if (value.isEmpty) {
+                List<String> c = globals.code.split("");
+                c.removeLast();
+                globals.code = c.join();
+                if (!widget.firstChild) {
+                  FocusScope.of(context).previousFocus();
+                } else {
+                  globals.code = '';
+                }
               }
-            } else if (value.isEmpty) {
-              List<String> c = globals.code.split("");
-              c.removeLast();
-              globals.code = c.join();
-              if (!widget.firstChild) {
-                FocusScope.of(context).previousFocus();
+              if (widget.lastChild) {
+                print(globals.code);
               }
-            }
-            if (widget.lastChild) {
-              print(globals.code);
-            }
-          });
+            },
+          );
         },
         textAlign: TextAlign.center,
         keyboardType: TextInputType.number,

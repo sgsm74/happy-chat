@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:happy_chat/data/bloc/contacts/contacts_bloc.dart';
 import 'package:happy_chat/data/bloc/contacts/contacts_event.dart';
 import 'package:happy_chat/data/bloc/contacts/contacts_state.dart';
+import 'package:happy_chat/data/models/message.dart';
 import 'package:happy_chat/presentation/screens/chat/chat.dart';
 import 'package:happy_chat/utilities/constants.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class HomeView extends StatefulWidget {
   HomeView({Key? key}) : super(key: key);
@@ -42,8 +45,6 @@ class _HomeViewState extends State<HomeView> {
               ),
             ),
           ],
-          backgroundColor: Constants.kBackgroundColor,
-          elevation: 0,
         ),
         body:
             Container(child: BlocBuilder<ContactsBloc, FetchContactsListState>(
@@ -70,51 +71,71 @@ class _HomeViewState extends State<HomeView> {
                         ),
                       ),
                     ),
-                    child: ListTile(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ChatView(
-                                    name: state.data["data"][index]["name"]
-                                        .toString(),
-                                    token: state.data["data"][index]["token"]
-                                        .toString(),
-                                    userId: state.data["data"][index]["id"]
-                                        .toString(),
-                                  )),
+                    child: ValueListenableBuilder(
+                      valueListenable: Hive.box<Message>('chats-' +
+                              state.data["data"][index]["id"].toString())
+                          .listenable(),
+                      builder: (context, Box<Message> box, _) {
+                        return ListTile(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatView(
+                                  name: state.data["data"][index]["name"]
+                                      .toString(),
+                                  token: state.data["data"][index]["token"]
+                                      .toString(),
+                                  userId: state.data["data"][index]["id"]
+                                      .toString(),
+                                ),
+                              ),
+                            );
+                          },
+                          trailing: ClipRRect(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(50),
+                            ),
+                            child: Image.asset("assets/user-images/rick.png"),
+                          ),
+                          title: Text(
+                            state.data["data"][index]["name"].toString(),
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          leading: Text(
+                            box.values.isEmpty
+                                ? "هیچگاه"
+                                : timeago
+                                    .format(box.values.last.date, locale: 'fa')
+                                    .toString(),
+                            textDirection: TextDirection.rtl,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          subtitle: Text(
+                            box.values.isEmpty
+                                ? "...هنوز پیامی ارسال نکرده اید"
+                                : box.values.last.content,
+                            textAlign: TextAlign.right,
+                            textDirection: TextDirection.rtl,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                            ),
+                          ),
                         );
                       },
-                      subtitle: Text(
-                        "...هنوز پیامی ارسال نکرده اید",
-                        textAlign: TextAlign.right,
-                      ),
-                      trailing: ClipRRect(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(50),
-                        ),
-                        child: Image.asset("assets/user-images/rick.png"),
-                      ),
-                      title: Text(
-                        state.data["data"][index]["name"].toString(),
-                        textAlign: TextAlign.right,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      leading: Text(
-                        "هیچگاه",
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
                     ),
                   );
                 },
               );
             else {
-              return Text("failed");
+              return Center(child: Text("failed"));
             }
           },
         )),

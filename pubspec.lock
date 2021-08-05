@@ -459,6 +459,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
+  scrollable_positioned_list:
+    dependency: transitive
+    description:
+      name: scrollable_positioned_list
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0-nullsafety.0"
+  shamsi_date:
+    dependency: "direct main"
+    description:
+      name: shamsi_date
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.15.0"
   shelf:
     dependency: transitive
     description:
@@ -506,6 +520,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.10.0"
+  sticky_grouped_list:
+    dependency: "direct main"
+    description:
+      name: sticky_grouped_list
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0-nullsafety.2"
   stream_channel:
     dependency: transitive
     description:
@@ -541,6 +562,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.0"
+  timeago:
+    dependency: "direct main"
+    description:
+      name: timeago
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.1.0"
   timing:
     dependency: transitive
     description:

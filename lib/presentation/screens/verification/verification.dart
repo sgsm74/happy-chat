@@ -54,22 +54,21 @@ class _VerificationViewState extends State<VerificationView> {
                     ),
                   ),
                   child: IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Icon(
-                        Icons.arrow_forward_rounded,
-                        color: Constants.kTextColor,
-                        size: 20,
-                      )),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Constants.kTextColor,
+                      size: 20,
+                    ),
+                  ),
                 )
               ],
             ),
           )
         ],
         leading: Container(),
-        backgroundColor: Constants.kBackgroundColor,
-        elevation: 0,
       ),
       body: SafeArea(
         child: ListView(
